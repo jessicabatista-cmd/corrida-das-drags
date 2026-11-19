@@ -178,6 +178,8 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 /* site publicado */
 [hidden]{display:none!important}
 .viewer [data-act="pagar"],.viewer [data-act="desfazer"],.viewer [data-act="rm"],.viewer #formBonus{display:none}
+#musicaBox{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:15;width:min(320px,calc(100vw - 24px));aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:3px solid var(--sun);box-shadow:0 10px 30px rgba(0,0,0,.4);background:#000}
+#musicaBox iframe{width:100%;height:100%;border:0;display:block}
 .quitarlink{display:none;text-decoration:none;align-items:center}
 .viewer .quitarlink{display:inline-flex}
 .adm .quitarlink,.adm-out .quitarlink{display:none}
@@ -241,6 +243,7 @@ footer{color:var(--muted);font-size:.85rem}
       <span class="tag" id="temporada">Temporada 2027 a 2029</span>
       <div id="sync" role="status"></div>
       <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Som: ligado</button>
+      <button class="btn ghost" id="musicaBtn" type="button" aria-pressed="false" hidden>♪ Tocar Jai Ho</button>
       <a class="btn ghost" id="admbtn" href="quitar.html" hidden style="display:inline-flex;align-items:center;text-decoration:none">Ir para a tela de quitar</a>
     </div>
   </header>
@@ -313,6 +316,7 @@ footer{color:var(--muted);font-size:.85rem}
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="musicaBox" hidden><iframe id="musicaFrame" title="Jai Ho, Pussycat Dolls (vídeo oficial)" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
 <div id="tchan" role="status" aria-live="assertive"><div class="rays"></div><div class="emo" id="tchanEmo">💅</div><div class="word">Arrasou, diva!<br>Menos uma!</div><div class="sub" id="tchanSub"></div><div class="sub2" id="tchanSub2"></div></div><canvas id="confetti" aria-hidden="true"></canvas>
 
 <script src="config.js"></script>
@@ -683,6 +687,23 @@ footer{color:var(--muted);font-size:.85rem}
   Array.prototype.forEach.call(document.querySelectorAll('#admTabs button'),function(b){
     b.addEventListener('click',function(){setTab(b.getAttribute('data-t'));});
   });
+
+  /* ---------- música no telão (player oficial do YouTube; o navegador exige um toque para tocar) ---------- */
+  var MUSICA='Yc5OyXmHD0w', musicaOn=false;
+  function setMusica(on){
+    musicaOn=on;
+    var box=$('musicaBox'), fr=$('musicaFrame'), b=$('musicaBtn');
+    if(on){
+      fr.src='https://www.youtube-nocookie.com/embed/'+MUSICA+'?autoplay=1&loop=1&playlist='+MUSICA+'&rel=0&playsinline=1';
+      box.hidden=false;
+    } else { fr.src='about:blank'; box.hidden=true; }
+    b.textContent=on?'♪ Parar Jai Ho':'♪ Tocar Jai Ho';
+    b.setAttribute('aria-pressed',String(on));
+  }
+  if(!ADM){
+    $('musicaBtn').hidden=false;
+    $('musicaBtn').addEventListener('click',function(){setMusica(!musicaOn);});
+  }
 
   /* ---------- início ---------- */
   loadLocal();
