@@ -458,7 +458,7 @@ footer{color:var(--muted);font-size:.85rem}
     }).join('')+'<div class="cup big '+(d.campeao?'on':'')+'">'+cupSvg()+'<span>A próxima superstar</span></div>';
 
     var preTot=DEBTS.reduce(function(s,x){return s+x.pre;},0);
-    var pre=preTot>0?'<div class="round pre"><span class="rn">Episódio 0</span><span class="mes">2026</span><div class="alloc"><span>Pré-temporada: '+DEBTS.filter(function(x){return x.pre>0;}).map(function(x){return esc(x.drag);}).join(', ')+'</span></div><span class="val num">'+brl(preTot)+'</span><span class="chip won">Paga</span></div>':'';
+    var pre=preTot>0?'<div class="round pre"><span class="rn">Episódio 0</span><span class="mes">2026</span><div class="alloc"><span>Pré-temporada: '+DEBTS.filter(function(x){return x.pre>0;}).map(function(x){return esc(x.drag);}).join(', ')+'</span></div><span class="val num">'+brl(preTot)+'</span></div>':'';
     var shown=d.rounds.slice(0,SHOWN);
     $('rodadas').innerHTML=pre+shown.map(function(r){
       var cur=nx&&r.key===nx.key;
