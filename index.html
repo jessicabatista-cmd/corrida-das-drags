@@ -61,7 +61,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .score .side{display:flex;flex-direction:column;gap:2px;min-width:0}
 .score .side.r{text-align:right}
 .score .lab{font-family:var(--f-display);font-weight:700;letter-spacing:.2em;font-size:.9rem;color:var(--panel-muted);text-transform:uppercase}
-.score .big{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,8.2vw,4.4rem);line-height:1;overflow-wrap:anywhere}
+.score .big{font-family:var(--f-display);font-weight:800;font-size:clamp(1.5rem,5.6vw,4.4rem);line-height:1;white-space:nowrap}
 .score .big.pago{color:var(--sun)}
 .score .x{font-family:var(--f-display);font-weight:800;font-size:1.6rem;color:var(--panel-muted);padding-bottom:6px}
 .bar{height:14px;border-radius:999px;background:rgba(157,180,218,.25);overflow:hidden;margin-top:18px}
@@ -178,6 +178,9 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 /* site publicado */
 [hidden]{display:none!important}
 .viewer [data-act="pagar"],.viewer [data-act="desfazer"],.viewer [data-act="rm"],.viewer #formBonus{display:none}
+.quitarlink{display:none;text-decoration:none;align-items:center}
+.viewer .quitarlink{display:inline-flex}
+.adm .quitarlink,.adm-out .quitarlink{display:none}
 .owner{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:12px 20px}
 .owner summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .owner .admin{padding:12px 0 4px}
@@ -238,7 +241,7 @@ footer{color:var(--muted);font-size:.85rem}
       <span class="tag" id="temporada">Temporada 2027 a 2029</span>
       <div id="sync" role="status"></div>
       <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Som: ligado</button>
-      <a class="btn ghost" id="admbtn" href="quitar.html" hidden style="display:inline-flex;align-items:center;text-decoration:none">Tela de quitar</a>
+      <a class="btn ghost" id="admbtn" href="quitar.html" hidden style="display:inline-flex;align-items:center;text-decoration:none">Ir para a tela de quitar</a>
     </div>
   </header>
 
@@ -408,7 +411,7 @@ footer{color:var(--muted);font-size:.85rem}
     } else if(nx){
       html='<div class="next"><div><div class="kick">Próximo episódio, bora arrasar</div><h3>Episódio '+nx.n+' · '+mesLabel(nx.key)+'</h3><ul>'+
         nx.alloc.map(function(a){return '<li><b class="num">'+brl(a.p)+'</b> contra '+esc(DEBTS[a.j].drag)+' <span class="muted">('+esc(DEBTS[a.j].nome)+')</span></li>';}).join('')+
-        '</ul></div><button class="btn" type="button" data-act="pagar" data-key="'+nx.key+'">Marcar como paga</button></div>';
+        '</ul></div><button class="btn" type="button" data-act="pagar" data-key="'+nx.key+'">Marcar como paga</button><a class="btn quitarlink" href="quitar.html">Ir para a tela de quitar →</a></div>';
     }
     $('proxima').innerHTML=html;
 
