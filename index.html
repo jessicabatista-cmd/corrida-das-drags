@@ -296,6 +296,7 @@ footer{color:var(--muted);font-size:.85rem}
 
   <details class="owner" id="owner" hidden>
     <summary>Área do dono</summary>
+    <div class="admin" style="padding:12px 0 4px"><button class="btn" id="gBtn" type="button">Entrar com Google</button><div class="muted">ou com e-mail e senha:</div></div>
     <form id="ownerIn" class="admin" autocomplete="on">
       <label for="o-email">E-mail<input id="o-email" type="email" autocomplete="username" required></label>
       <label for="o-pass">Senha<input id="o-pass" type="password" autocomplete="current-password" required></label>
@@ -617,12 +618,15 @@ footer{color:var(--muted);font-size:.85rem}
       var snap=JSON.stringify({dados:state});
       busy++;
       freshToken().then(function(tok){
-        return fetch(API+'/rest/v1/liga_estado?id=eq.1',{method:'PATCH',headers:Object.assign(hdr(tok),{'Prefer':'return=minimal'}),body:snap});
+        return fetch(API+'/rest/v1/liga_estado?id=eq.1',{method:'PATCH',headers:Object.assign(hdr(tok),{'Prefer':'return=representation'}),body:snap});
       }).then(function(r){
         if(!r.ok) throw r.status;
+        return r.json();
+      }).then(function(rows){
+        if(!rows.length) throw 'sem-permissao';
         lastJson=JSON.stringify(canon(normalize(state))); setSync('Salvo');
-      }).catch(function(){
-        setSync('Não foi possível salvar. Entre de novo na Área do dono.');
+      }).catch(function(e){
+        setSync(e==='sem-permissao'?'Seu e-mail não tem permissão para salvar. Peça para a Jéssica liberar.':'Não foi possível salvar. Entre de novo na Área do dono.');
       }).then(function(){busy--;});
     }
   }
@@ -666,6 +670,18 @@ footer{color:var(--muted);font-size:.85rem}
       .then(function(j){setSession(j,email);$('o-pass').value='';applyOwner();pull();})
       .catch(function(){$('ownerErr').textContent='E-mail ou senha incorretos.';});
   });
+  function captureGoogle(){
+    var p=new URLSearchParams(location.hash.slice(1)), tok=p.get('access_token'), ref=p.get('refresh_token'), exp=+p.get('expires_in')||3600;
+    history.replaceState(null,'',location.pathname+location.search);
+    fetch(API+'/auth/v1/user',{headers:{'apikey':CFG.anon,'Authorization':'Bearer '+tok}})
+      .then(function(r){return r.json();})
+      .then(function(u){setSession({access_token:tok,refresh_token:ref,expires_in:exp},u.email||'');location.replace(location.pathname+'?admin=1');})
+      .catch(function(){location.replace(location.pathname+'?admin=1');});
+  }
+  $('gBtn').addEventListener('click',function(){
+    var back=location.origin+location.pathname.replace(/index\.html$/,'');
+    location.href=API+'/auth/v1/authorize?provider=google&prompt=select_account&redirect_to='+encodeURIComponent(back);
+  });
   $('admOut').addEventListener('click',function(e){
     e.preventDefault(); session=null; try{sessionStorage.removeItem(LS+'-sess');}catch(x){}
     location.href='?admin=1';
@@ -676,6 +692,13 @@ footer{color:var(--muted);font-size:.85rem}
 
   /* ---------- início ---------- */
   loadLocal();
+  if(API&&location.hash.indexOf('access_token=')>=0){captureGoogle();return;}
+  var eh=/error_description=([^&]+)/.exec(location.hash);
+  if(API&&eh){
+    if(!ADM){location.replace(location.pathname+'?admin=1'+location.hash);return;}
+    $('ownerErr').textContent='Erro no login com Google: '+decodeURIComponent(eh[1].replace(/\+/g,' '));
+    history.replaceState(null,'',location.pathname+location.search);
+  }
   try{var ss=sessionStorage.getItem(LS+'-sess'); if(ss) session=JSON.parse(ss);}catch(e){}
   render();
   renderAdmin(true);
