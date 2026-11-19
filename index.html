@@ -155,14 +155,16 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 #tchan.show{opacity:1;pointer-events:auto}
 #tchan .rays{position:absolute;width:160vmax;height:160vmax;left:50%;top:45%;margin:-80vmax 0 0 -80vmax;
   background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.14) 0 6deg,transparent 6deg 18deg);animation:spin 14s linear infinite;pointer-events:none}
-#tchan .word{position:relative;font-family:var(--f-display);font-weight:800;text-transform:uppercase;font-size:clamp(5rem,26vw,13rem);line-height:.9;letter-spacing:.02em;
+#tchan .word{position:relative;font-family:var(--f-display);font-weight:800;text-transform:uppercase;font-size:clamp(2.8rem,12vw,7rem);line-height:1.05;letter-spacing:.02em;
   background:var(--rainbow);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,255,255,.55)) drop-shadow(0 6px 0 rgba(0,0,0,.5))}
 #tchan.show .word{animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+#tchan .emo{position:relative;font-size:clamp(4rem,16vw,8rem);line-height:1}
+#tchan.show .emo{animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
 #tchan .sub{position:relative;font-family:var(--f-display);font-weight:700;font-size:clamp(1.3rem,5vw,2.2rem);color:#fff;text-transform:uppercase;letter-spacing:.06em}
 #tchan .sub2{position:relative;color:#ffd9f5;font-size:1rem;max-width:32rem}
 @keyframes pop{0%{transform:scale(.1) rotate(-10deg);opacity:0}60%{transform:scale(1.18) rotate(3deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){#tchan .rays{animation:none}#tchan.show .word{animation:none}}
+@media (prefers-reduced-motion:reduce){#tchan .rays{animation:none}#tchan.show .word,#tchan.show .emo{animation:none}}
 
 /* admin */
 .admin{padding:6px 20px 16px;display:flex;flex-direction:column;gap:14px}
@@ -174,11 +176,11 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 @media (max-width:640px){.arow{grid-template-columns:1fr 1fr}.arow label:first-child{grid-column:1 / -1}}
 
 /* site publicado */
+[hidden]{display:none!important}
 .viewer [data-act="pagar"],.viewer [data-act="desfazer"],.viewer [data-act="rm"],.viewer #formBonus{display:none}
 .owner{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:12px 20px}
 .owner summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .owner .admin{padding:12px 0 4px}
-[hidden]{display:none!important}
 .admbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .admbar .sp{flex:1}
 .admbar a{color:var(--blue);font-weight:600}
@@ -236,12 +238,12 @@ footer{color:var(--muted);font-size:.85rem}
       <span class="tag" id="temporada">Temporada 2027 a 2029</span>
       <div id="sync" role="status"></div>
       <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Som: ligado</button>
-      <a class="btn ghost" id="admbtn" href="?admin=1" hidden style="display:inline-flex;align-items:center;text-decoration:none">⚙ Painel ADM</a>
+      <a class="btn ghost" id="admbtn" href="quitar.html" hidden style="display:inline-flex;align-items:center;text-decoration:none">Tela de quitar</a>
     </div>
   </header>
 
-  <div class="admbar" id="admbar" hidden><b>Corrida das Drags · ADM</b><span class="muted" id="admWho"></span><span class="sp"></span><a href="./" target="_blank" rel="noopener">abrir telão ↗</a><a href="#" id="admOut">sair</a></div>
-  <div class="tabs" id="admTabs" hidden><button type="button" data-t="pagar">Lançar pagamento</button><button type="button" data-t="reforcos">Reforços</button><button type="button" data-t="cfg">Ajustes</button></div>
+  <div class="admbar" id="admbar" hidden><b>Corrida das Drags · Quitar</b><span class="sp"></span><a href="./" target="_blank" rel="noopener">abrir telão ↗</a><a href="#" id="admOut">sair</a></div>
+  <div class="tabs" id="admTabs" hidden><button type="button" data-t="pagar">Quitar</button><button type="button" data-t="reforcos">Reforços</button><button type="button" data-t="cfg">Ajustes</button></div>
 
   <section class="board" aria-label="Placar geral"><div id="placar"></div></section>
   <section id="proxima" aria-label="Próxima rodada"></section>
@@ -294,23 +296,20 @@ footer{color:var(--muted);font-size:.85rem}
     <div class="more"><button class="btn ghost danger" type="button" id="aClear">Desmarcar todos os pagamentos</button></div>
   </section>
 
-  <details class="owner" id="owner" hidden>
-    <summary>Área do dono</summary>
-    <div class="admin" style="padding:12px 0 4px"><button class="btn" id="gBtn" type="button">Entrar com Google</button><div class="muted">Use a conta Google autorizada (Pronix ou VDV Group).</div></div>
-    <form id="ownerIn" class="admin" autocomplete="on" hidden>
-      <label for="o-email">E-mail<input id="o-email" type="email" autocomplete="username" required></label>
-      <label for="o-pass">Senha<input id="o-pass" type="password" autocomplete="current-password" required></label>
+  <details class="owner" id="owner" open hidden>
+    <summary>Tela de quitar</summary>
+    <form id="pinForm" class="admin" autocomplete="off">
+      <label for="o-pin">PIN<input id="o-pin" type="password" autocomplete="off" required></label>
       <div class="err" id="ownerErr" role="alert" style="padding:0"></div>
       <div class="btns"><button class="btn" type="submit">Entrar</button></div>
     </form>
-    <div id="ownerOut" class="more" hidden><span class="muted" id="ownerWho"></span> <button class="btn ghost" id="ownerExit" type="button">Sair</button></div>
   </details>
 
   <footer>Plano: <span id="mTxt2">R$ 950,00</span> por mês a partir de fevereiro de 2027, pagando as dívidas na ordem das competidoras. O pagamento antecipado de 2026 já entrou como pré-temporada. Feito com orgulho.</footer>
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
-<div id="tchan" role="status" aria-live="assertive"><div class="rays"></div><div class="word">Tchan!</div><div class="sub" id="tchanSub"></div><div class="sub2" id="tchanSub2"></div></div><canvas id="confetti" aria-hidden="true"></canvas>
+<div id="tchan" role="status" aria-live="assertive"><div class="rays"></div><div class="emo" id="tchanEmo">💅</div><div class="word">Arrasou, diva!<br>Menos uma!</div><div class="sub" id="tchanSub"></div><div class="sub2" id="tchanSub2"></div></div><canvas id="confetti" aria-hidden="true"></canvas>
 
 <script src="config.js"></script>
 <script>
@@ -488,7 +487,7 @@ footer{color:var(--muted);font-size:.85rem}
     var b=e.target.closest('[data-act]'); if(!b) return;
     var a=b.getAttribute('data-act'), key=b.getAttribute('data-key');
     if(document.body.classList.contains('viewer')&&(a==='pagar'||a==='desfazer'||a==='rm')){return;}
-    if(a==='pagar'){change(function(){state.pagos[key]=Date.now();},'pay');showTchan(key);}
+    if(a==='pagar'){change(function(){state.pagos[key]=Date.now();},'pay');tchanAfterSave(key);}
     else if(a==='desfazer'){change(function(){delete state.pagos[key];});}
     else if(a==='mais'){SHOWN=999;render();}
     else if(a==='rm'){var id=b.getAttribute('data-id');change(function(){state.bonus=state.bonus.filter(function(x){return x.id!==id;});});}
@@ -528,11 +527,13 @@ footer{color:var(--muted);font-size:.85rem}
     var d=derive(state), r=d.rounds.filter(function(x){return x.key===key;})[0]; if(!r) return;
     $('tchanSub').textContent='Episódio '+r.n+' pago · '+brl(r.total);
     $('tchanSub2').textContent=d.campeao?'Todas as dívidas foram quitadas. Condragulations!':(d.next?'Faltam '+brl(d.totalDebt-d.totalPago)+'. Próximo episódio: '+mesLabel(d.next.key)+'.':'');
+    $('tchanEmo').textContent=['💅','👑','🔥','💃','🤑'][Math.floor(Math.random()*5)];
     var el=$('tchan'); el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
     tchanSound(); confetti(d.campeao?260:140);
     clearTimeout(tchanTimer); tchanTimer=setTimeout(function(){el.classList.remove('show');},2700);
   }
   $('tchan').addEventListener('click',function(){$('tchan').classList.remove('show');});
+  function tchanAfterSave(key){showTchan(key);}
   $('somBtn').addEventListener('click',function(){somOn=!somOn;try{localStorage.setItem(LS+'-som',somOn?'1':'0');}catch(e){} setSom(); if(somOn) tchanSound();});
   setSom();
 
@@ -593,105 +594,87 @@ footer{color:var(--muted);font-size:.85rem}
   }
 
   /* ---------- início ---------- */
-  /* ---------- Supabase (REST) ---------- */
-  var CFG=window.LIGA_CONFIG||{}, API=(CFG.url||'').replace(/\/$/,''), session=null, lastJson='', busy=0;
+  /* ---------- Supabase (REST) sem login: o PIN vale só para salvar ---------- */
+  var CFG=window.LIGA_CONFIG||{}, API=(CFG.url||'').replace(/\/$/,''), PIN=null, lastJson='', busy=0, firstPull=true;
+  var ADM=false;
   function canon(v){
     if(Array.isArray(v)) return v.map(canon);
     if(v&&typeof v==='object'){var o={};Object.keys(v).sort().forEach(function(k){o[k]=canon(v[k]);});return o;}
     return v;
   }
-  function hdr(tok){return {'apikey':CFG.anon,'Authorization':'Bearer '+(tok||CFG.anon),'Content-Type':'application/json'};}
-  function setSession(j,email){
-    session={token:j.access_token,refresh:j.refresh_token,email:email,exp:Date.now()+(j.expires_in||3600)*1000};
-    try{sessionStorage.setItem(LS+'-sess',JSON.stringify(session));}catch(e){}
+  function hdr(){return {'apikey':CFG.anon,'Authorization':'Bearer '+CFG.anon,'Content-Type':'application/json'};}
+  function rpc(name,body){
+    return fetch(API+'/rest/v1/rpc/'+name,{method:'POST',headers:hdr(),body:JSON.stringify(body)})
+      .then(function(r){if(!r.ok) throw r.status;return r.json();});
   }
-  function freshToken(){
-    if(!session) return Promise.reject(new Error('sem sessao'));
-    if(session.exp-60000>Date.now()) return Promise.resolve(session.token);
-    return fetch(API+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':CFG.anon,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh})})
-      .then(function(r){return r.json().then(function(j){if(!r.ok) throw j;return j;});})
-      .then(function(j){setSession(j,session.email);return session.token;});
-  }
+  var pendingTchan=null;
+  function tchanAfterSave(key){ if(API&&PIN){pendingTchan=key;} else {showTchan(key);} }
   function save(){
     saveLocal();
-    if(API&&session){
-      var snap=JSON.stringify({dados:state});
+    if(API&&PIN){
       busy++;
-      freshToken().then(function(tok){
-        return fetch(API+'/rest/v1/drags_estado?id=eq.1',{method:'PATCH',headers:Object.assign(hdr(tok),{'Prefer':'return=representation'}),body:snap});
-      }).then(function(r){
-        if(!r.ok) throw r.status;
-        return r.json();
-      }).then(function(rows){
-        if(!rows.length) throw 'sem-permissao';
+      rpc('drags_salvar',{p_pin:PIN,p_dados:JSON.parse(JSON.stringify(state))}).then(function(ok){
+        if(ok!==true) throw 'pin';
         lastJson=JSON.stringify(canon(normalize(state))); setSync('Salvo');
+        if(pendingTchan){var kk=pendingTchan;pendingTchan=null;showTchan(kk);}
       }).catch(function(e){
-        setSync(e==='sem-permissao'?'Seu e-mail não tem permissão para salvar. Peça para a Jéssica liberar.':'Não foi possível salvar. Entre de novo na Área do dono.');
+        pendingTchan=null;
+        if(e==='pin'){
+          PIN=null; try{localStorage.removeItem(LS+'-pin');}catch(x){}
+          applyMode(); $('ownerErr').textContent='PIN incorreto ou trocado. Digite de novo.';
+        } else { setSync('Não foi possível salvar. Tente de novo.'); }
       }).then(function(){busy--;});
     }
   }
-  var ADM=/[?&]admin/.test(location.search);
   function setTab(t){
     document.body.setAttribute('data-tab',t);
     Array.prototype.forEach.call(document.querySelectorAll('#admTabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-t')===t);});
   }
-  function applyOwner(){
-    var on=!!API, logged=!!session, adm=ADM&&on;
-    document.body.classList.toggle('viewer',on&&!logged);
+  function applyMode(){
+    var on=!!API, logged=!!PIN, adm=ADM&&on;
+    document.body.classList.toggle('viewer',on&&!(adm&&logged));
     document.body.classList.toggle('adm',adm&&logged);
     document.body.classList.toggle('adm-out',adm&&!logged);
     $('admin').hidden=on?!(adm&&logged):false;
     $('owner').hidden=!(adm&&!logged);
-    if(adm&&!logged) $('owner').open=true;
     $('admbar').hidden=!(adm&&logged);
     $('admTabs').hidden=!(adm&&logged);
     $('admbtn').hidden=!(on&&!adm);
-    if(logged) $('admWho').textContent=session.email;
     if(adm&&logged&&!document.body.getAttribute('data-tab')) setTab('pagar');
   }
   function pull(){
     if(!API||busy) return;
-    fetch(API+'/rest/v1/drags_estado?id=eq.1&select=dados',{headers:hdr(session&&session.token)})
+    fetch(API+'/rest/v1/drags_estado?id=eq.1&select=dados',{headers:hdr()})
       .then(function(r){if(!r.ok) throw r.status;return r.json();})
       .then(function(rows){
         if(!rows.length) return;
         var s=normalize(rows[0].dados), j=JSON.stringify(canon(s));
-        if(j!==lastJson){lastJson=j;state=s;saveLocal();render();renderAdmin(false);}
-        setSync(session?'Salvo':'Ao vivo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
+        if(j!==lastJson){
+          var antes=Object.keys(state.pagos);
+          lastJson=j; state=s; saveLocal(); render(); renderAdmin(false);
+          if(!firstPull&&!document.body.classList.contains('adm')){
+            var novos=Object.keys(s.pagos).filter(function(k){return antes.indexOf(k)<0;});
+            if(novos.length) showTchan(novos.sort().pop());
+          }
+        }
+        firstPull=false;
+        setSync('Ao vivo · atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
       })
       .catch(function(){setSync('Sem conexão com o servidor. Mostrando o último estado.');});
   }
-  $('ownerIn').addEventListener('submit',function(e){
+  $('pinForm').addEventListener('submit',function(e){
     e.preventDefault(); $('ownerErr').textContent='';
-    var email=$('o-email').value.trim();
-    fetch(API+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':CFG.anon,'Content-Type':'application/json'},body:JSON.stringify({email:email,password:$('o-pass').value})})
-      .then(function(r){return r.json().then(function(j){if(!r.ok) throw j;return j;});})
-      .then(function(j){setSession(j,email);$('o-pass').value='';applyOwner();pull();})
-      .catch(function(){$('ownerErr').textContent='E-mail ou senha incorretos.';});
-  });
-  function captureGoogle(){
-    var p=new URLSearchParams(location.hash.slice(1)), tok=p.get('access_token'), ref=p.get('refresh_token'), exp=+p.get('expires_in')||3600;
-    history.replaceState(null,'',location.pathname+location.search);
-    fetch(API+'/auth/v1/user',{headers:{'apikey':CFG.anon,'Authorization':'Bearer '+tok}})
-      .then(function(r){return r.json();})
-      .then(function(u){
-        var email=u.email||'';
-        return fetch(API+'/rest/v1/rpc/drags_is_dono',{method:'POST',headers:{'apikey':CFG.anon,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:'{}'})
-          .then(function(r){return r.json();})
-          .then(function(ok){
-            if(ok===true){setSession({access_token:tok,refresh_token:ref,expires_in:exp},email);location.replace(location.pathname+'?admin=1');}
-            else{location.replace(location.pathname+'?admin=1&negado='+encodeURIComponent(email));}
-          });
-      })
-      .catch(function(){location.replace(location.pathname+'?admin=1');});
-  }
-  $('gBtn').addEventListener('click',function(){
-    var back=location.origin+location.pathname.replace(/index\.html$/,'');
-    location.href=API+'/auth/v1/authorize?provider=google&prompt=select_account&redirect_to='+encodeURIComponent(back);
+    var p=$('o-pin').value.trim();
+    rpc('drags_pin_ok',{p_pin:p}).then(function(ok){
+      if(ok===true){
+        PIN=p; try{localStorage.setItem(LS+'-pin',p);}catch(x){}
+        $('o-pin').value=''; applyMode(); pull();
+      } else { $('ownerErr').textContent='PIN incorreto.'; }
+    }).catch(function(){$('ownerErr').textContent='Sem conexão. Tente de novo.';});
   });
   $('admOut').addEventListener('click',function(e){
-    e.preventDefault(); session=null; try{sessionStorage.removeItem(LS+'-sess');}catch(x){}
-    location.href='?admin=1';
+    e.preventDefault(); PIN=null; try{localStorage.removeItem(LS+'-pin');}catch(x){}
+    location.reload();
   });
   Array.prototype.forEach.call(document.querySelectorAll('#admTabs button'),function(b){
     b.addEventListener('click',function(){setTab(b.getAttribute('data-t'));});
@@ -699,22 +682,10 @@ footer{color:var(--muted);font-size:.85rem}
 
   /* ---------- início ---------- */
   loadLocal();
-  if(API&&location.hash.indexOf('access_token=')>=0){captureGoogle();return;}
-  var neg=/[?&]negado=([^&]+)/.exec(location.search);
-  if(API&&neg){
-    $('ownerErr').textContent='A conta '+decodeURIComponent(neg[1])+' não tem acesso ao painel. Entre com outra conta Google.';
-    history.replaceState(null,'',location.pathname+'?admin=1');
-  }
-  var eh=/error_description=([^&]+)/.exec(location.hash);
-  if(API&&eh){
-    if(!ADM){location.replace(location.pathname+'?admin=1'+location.hash);return;}
-    $('ownerErr').textContent='Erro no login com Google: '+decodeURIComponent(eh[1].replace(/\+/g,' '));
-    history.replaceState(null,'',location.pathname+location.search);
-  }
-  try{var ss=sessionStorage.getItem(LS+'-sess'); if(ss) session=JSON.parse(ss);}catch(e){}
+  try{PIN=localStorage.getItem(LS+'-pin');}catch(e){}
   render();
   renderAdmin(true);
-  applyOwner();
+  applyMode();
   if(!API){
     setSync('Modo local: salvo só neste navegador. Configure o config.js para ficar ao vivo.');
   } else {
