@@ -180,9 +180,17 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 .viewer [data-act="pagar"],.viewer [data-act="desfazer"],.viewer [data-act="rm"],.viewer #formBonus{display:none}
 #musicaBox{position:fixed;left:-400px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;overflow:hidden}
 #musicaBox iframe{width:200px;height:200px;border:0}
+.top>div[style]{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;text-align:right!important}
+.top>div[style] #sync{flex-basis:100%;order:3;text-align:right}
+.top>div[style] .tag{order:0}
+.admbar{padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);gap:8px 16px}
+.admbar b{font-family:var(--f-display);font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase}
 @media (max-width:640px){
-  .top>div[style]{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;text-align:left!important;width:100%}
-  .top>div[style] #sync{flex-basis:100%;order:3}
+  .top>div[style]{justify-content:flex-start;text-align:left!important;width:100%}
+  .top>div[style] #sync{flex-basis:100%;order:3;text-align:left}
+  .admbar b{flex-basis:100%}
+  .admbar .sp{display:none}
+  .admbar a{padding:6px 0}
   .top .btn.ghost{min-height:44px}
   #classificacao thead{display:none}
   #classificacao table,#classificacao tbody{display:block}
