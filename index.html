@@ -296,8 +296,8 @@ footer{color:var(--muted);font-size:.85rem}
 
   <details class="owner" id="owner" hidden>
     <summary>Área do dono</summary>
-    <div class="admin" style="padding:12px 0 4px"><button class="btn" id="gBtn" type="button">Entrar com Google</button><div class="muted">ou com e-mail e senha:</div></div>
-    <form id="ownerIn" class="admin" autocomplete="on">
+    <div class="admin" style="padding:12px 0 4px"><button class="btn" id="gBtn" type="button">Entrar com Google</button><div class="muted">Use a conta Google autorizada (Pronix ou VDV Group).</div></div>
+    <form id="ownerIn" class="admin" autocomplete="on" hidden>
       <label for="o-email">E-mail<input id="o-email" type="email" autocomplete="username" required></label>
       <label for="o-pass">Senha<input id="o-pass" type="password" autocomplete="current-password" required></label>
       <div class="err" id="ownerErr" role="alert" style="padding:0"></div>
@@ -618,7 +618,7 @@ footer{color:var(--muted);font-size:.85rem}
       var snap=JSON.stringify({dados:state});
       busy++;
       freshToken().then(function(tok){
-        return fetch(API+'/rest/v1/liga_estado?id=eq.1',{method:'PATCH',headers:Object.assign(hdr(tok),{'Prefer':'return=representation'}),body:snap});
+        return fetch(API+'/rest/v1/drags_estado?id=eq.1',{method:'PATCH',headers:Object.assign(hdr(tok),{'Prefer':'return=representation'}),body:snap});
       }).then(function(r){
         if(!r.ok) throw r.status;
         return r.json();
@@ -646,13 +646,12 @@ footer{color:var(--muted);font-size:.85rem}
     $('admbar').hidden=!(adm&&logged);
     $('admTabs').hidden=!(adm&&logged);
     $('admbtn').hidden=!(on&&!adm);
-    $('ownerIn').hidden=logged;
     if(logged) $('admWho').textContent=session.email;
     if(adm&&logged&&!document.body.getAttribute('data-tab')) setTab('pagar');
   }
   function pull(){
     if(!API||busy) return;
-    fetch(API+'/rest/v1/liga_estado?id=eq.1&select=dados',{headers:hdr(session&&session.token)})
+    fetch(API+'/rest/v1/drags_estado?id=eq.1&select=dados',{headers:hdr(session&&session.token)})
       .then(function(r){if(!r.ok) throw r.status;return r.json();})
       .then(function(rows){
         if(!rows.length) return;
@@ -675,7 +674,15 @@ footer{color:var(--muted);font-size:.85rem}
     history.replaceState(null,'',location.pathname+location.search);
     fetch(API+'/auth/v1/user',{headers:{'apikey':CFG.anon,'Authorization':'Bearer '+tok}})
       .then(function(r){return r.json();})
-      .then(function(u){setSession({access_token:tok,refresh_token:ref,expires_in:exp},u.email||'');location.replace(location.pathname+'?admin=1');})
+      .then(function(u){
+        var email=u.email||'';
+        return fetch(API+'/rest/v1/rpc/drags_is_dono',{method:'POST',headers:{'apikey':CFG.anon,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:'{}'})
+          .then(function(r){return r.json();})
+          .then(function(ok){
+            if(ok===true){setSession({access_token:tok,refresh_token:ref,expires_in:exp},email);location.replace(location.pathname+'?admin=1');}
+            else{location.replace(location.pathname+'?admin=1&negado='+encodeURIComponent(email));}
+          });
+      })
       .catch(function(){location.replace(location.pathname+'?admin=1');});
   }
   $('gBtn').addEventListener('click',function(){
@@ -693,6 +700,11 @@ footer{color:var(--muted);font-size:.85rem}
   /* ---------- início ---------- */
   loadLocal();
   if(API&&location.hash.indexOf('access_token=')>=0){captureGoogle();return;}
+  var neg=/[?&]negado=([^&]+)/.exec(location.search);
+  if(API&&neg){
+    $('ownerErr').textContent='A conta '+decodeURIComponent(neg[1])+' não tem acesso ao painel. Entre com outra conta Google.';
+    history.replaceState(null,'',location.pathname+'?admin=1');
+  }
   var eh=/error_description=([^&]+)/.exec(location.hash);
   if(API&&eh){
     if(!ADM){location.replace(location.pathname+'?admin=1'+location.hash);return;}
