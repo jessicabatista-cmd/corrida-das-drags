@@ -178,6 +178,18 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 .owner{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:12px 20px}
 .owner summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .owner .admin{padding:12px 0 4px}
+[hidden]{display:none!important}
+.admbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.admbar .sp{flex:1}
+.admbar a{color:var(--blue);font-weight:600}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px 16px;font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:1.05rem;min-height:44px}
+.tabs button.on{background:var(--sun);color:var(--sun-ink);border-color:var(--sun)}
+body.adm .card[aria-labelledby="h-corr"],body.adm .card[aria-labelledby="h-class"],body.adm .card[aria-labelledby="h-trof"],body.adm footer{display:none}
+body.adm[data-tab="pagar"] .card[aria-labelledby="h-bonus"],body.adm[data-tab="pagar"] #admin{display:none}
+body.adm[data-tab="reforcos"] #proxima,body.adm[data-tab="reforcos"] .card[aria-labelledby="h-rod"],body.adm[data-tab="reforcos"] #admin{display:none}
+body.adm[data-tab="cfg"] #proxima,body.adm[data-tab="cfg"] .card[aria-labelledby="h-rod"],body.adm[data-tab="cfg"] .card[aria-labelledby="h-bonus"]{display:none}
+body.adm-out .board,body.adm-out .card,body.adm-out #proxima{display:none}
 
 /* toast e confete */
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);opacity:0;pointer-events:none;
@@ -224,8 +236,12 @@ footer{color:var(--muted);font-size:.85rem}
       <span class="tag" id="temporada">Temporada 2027 a 2029</span>
       <div id="sync" role="status"></div>
       <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Som: ligado</button>
+      <a class="btn ghost" id="admbtn" href="?admin=1" hidden style="display:inline-flex;align-items:center;text-decoration:none">⚙ Painel ADM</a>
     </div>
   </header>
+
+  <div class="admbar" id="admbar" hidden><b>Corrida das Drags · ADM</b><span class="muted" id="admWho"></span><span class="sp"></span><a href="./" target="_blank" rel="noopener">abrir telão ↗</a><a href="#" id="admOut">sair</a></div>
+  <div class="tabs" id="admTabs" hidden><button type="button" data-t="pagar">Lançar pagamento</button><button type="button" data-t="reforcos">Reforços</button><button type="button" data-t="cfg">Ajustes</button></div>
 
   <section class="board" aria-label="Placar geral"><div id="placar"></div></section>
   <section id="proxima" aria-label="Próxima rodada"></section>
@@ -610,13 +626,25 @@ footer{color:var(--muted);font-size:.85rem}
       }).then(function(){busy--;});
     }
   }
+  var ADM=/[?&]admin/.test(location.search);
+  function setTab(t){
+    document.body.setAttribute('data-tab',t);
+    Array.prototype.forEach.call(document.querySelectorAll('#admTabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-t')===t);});
+  }
   function applyOwner(){
-    document.body.classList.toggle('viewer',!!API&&!session);
-    $('admin').hidden=!(!API||session);
-    $('owner').hidden=!API;
-    $('ownerIn').hidden=!!session;
-    $('ownerOut').hidden=!session;
-    if(session) $('ownerWho').textContent='Logado como '+session.email+'.';
+    var on=!!API, logged=!!session, adm=ADM&&on;
+    document.body.classList.toggle('viewer',on&&!logged);
+    document.body.classList.toggle('adm',adm&&logged);
+    document.body.classList.toggle('adm-out',adm&&!logged);
+    $('admin').hidden=on?!(adm&&logged):false;
+    $('owner').hidden=!(adm&&!logged);
+    if(adm&&!logged) $('owner').open=true;
+    $('admbar').hidden=!(adm&&logged);
+    $('admTabs').hidden=!(adm&&logged);
+    $('admbtn').hidden=!(on&&!adm);
+    $('ownerIn').hidden=logged;
+    if(logged) $('admWho').textContent=session.email;
+    if(adm&&logged&&!document.body.getAttribute('data-tab')) setTab('pagar');
   }
   function pull(){
     if(!API||busy) return;
@@ -638,9 +666,12 @@ footer{color:var(--muted);font-size:.85rem}
       .then(function(j){setSession(j,email);$('o-pass').value='';applyOwner();pull();})
       .catch(function(){$('ownerErr').textContent='E-mail ou senha incorretos.';});
   });
-  $('ownerExit').addEventListener('click',function(){
-    session=null; try{sessionStorage.removeItem(LS+'-sess');}catch(e){}
-    applyOwner();
+  $('admOut').addEventListener('click',function(e){
+    e.preventDefault(); session=null; try{sessionStorage.removeItem(LS+'-sess');}catch(x){}
+    location.href='?admin=1';
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#admTabs button'),function(b){
+    b.addEventListener('click',function(){setTab(b.getAttribute('data-t'));});
   });
 
   /* ---------- início ---------- */
@@ -654,7 +685,7 @@ footer{color:var(--muted);font-size:.85rem}
   } else {
     setSync('Conectando...');
     pull();
-    setInterval(pull,8000);
+    setInterval(pull,4000);
     document.addEventListener('visibilitychange',function(){if(!document.hidden) pull();});
   }
 })();
