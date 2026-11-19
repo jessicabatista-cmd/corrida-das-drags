@@ -717,11 +717,12 @@ footer{color:var(--muted);font-size:.85rem}
   });
 
   /* ---------- música no telão (player oficial do YouTube; o navegador exige um toque para tocar) ---------- */
-  var SPOTIFY='spotify:track:3OsGQkrKpTMMJNJLHwwBoE', musicaOn=false, spCtl=null, spLoading=false, jaTocou=false, tocando=false;
+  var SPOTIFY='spotify:track:3OsGQkrKpTMMJNJLHwwBoE', musicaOn=false, spCtl=null, spLoading=false, jaTocou=false, tocando=false, spAPI=null;
   function iniciarSpotify(){
     if(spCtl||spLoading) return;
     spLoading=true;
     window.onSpotifyIframeApiReady=function(API){
+      spAPI=API;
       API.createController($('spotifyEmbed'),{uri:SPOTIFY,width:'100%',height:80},function(c){
         spCtl=c; spLoading=false;
         c.addListener('ready',function(){ if(musicaOn){try{c.play();}catch(e){}} });
@@ -735,6 +736,21 @@ footer{color:var(--muted);font-size:.85rem}
     var s=document.createElement('script'); s.src='https://open.spotify.com/embed/iframe-api/v1'; s.async=true;
     s.onerror=function(){spLoading=false;};
     document.head.appendChild(s);
+  }
+  function reabrirPlayer(){
+    if(!spAPI){ iniciarSpotify(); return; }
+    try{ if(spCtl) spCtl.destroy(); }catch(e){}
+    spCtl=null; spLoading=true;
+    $('musicaBox').innerHTML='<div id="spotifyEmbed"></div>';
+    spAPI.createController($('spotifyEmbed'),{uri:SPOTIFY,width:'100%',height:80},function(c){
+      spCtl=c; spLoading=false;
+      c.addListener('ready',function(){ if(musicaOn){try{c.play();}catch(e){}} });
+      c.addListener('playback_update',function(e){
+        var d=(e&&e.data)||{};
+        tocando=!d.isPaused; if(tocando) jaTocou=true; rotuloMusica();
+        if(d.isPaused&&d.position===0&&jaTocou&&musicaOn){try{c.play();}catch(x){}}
+      });
+    });
   }
   function rotuloMusica(){
     var b=$('musicaBtn');
@@ -755,7 +771,7 @@ footer{color:var(--muted);font-size:.85rem}
     $('musicaBtn').hidden=false;
     $('musicaBtn').addEventListener('click',function(){
       if(tocando){ musicaParadaPeloUsuario=true; musicaOn=false; if(spCtl){try{spCtl.pause();}catch(x){}} tocando=false; rotuloMusica(); }
-      else { musicaParadaPeloUsuario=false; setMusica(true); }
+      else { musicaParadaPeloUsuario=false; musicaOn=true; $('musicaBox').hidden=false; reabrirPlayer(); rotuloMusica(); }
     });
     // tenta tocar assim que abre; se o navegador bloquear o som, começa no primeiro toque ou tecla
     setMusica(true);
