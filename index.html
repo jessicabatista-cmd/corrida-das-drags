@@ -270,8 +270,8 @@ footer{color:var(--muted);font-size:.85rem}
     <div style="text-align:right">
       <span class="tag" id="temporada">Temporada 2027 a 2029</span>
       <div id="sync" role="status"></div>
-      <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Som: ligado</button>
-      <button class="btn ghost" id="musicaBtn" type="button" aria-pressed="false" hidden>♪ Tocar Jai Ho</button>
+      <button class="btn ghost" id="somBtn" type="button" aria-pressed="true">Efeitos: ligados</button>
+      <button class="btn ghost" id="musicaBtn" type="button" aria-pressed="false" hidden>♪ Tocar música</button>
       <a class="btn ghost" id="admbtn" href="quitar.html" hidden style="display:inline-flex;align-items:center;text-decoration:none">Ir para a tela de quitar</a>
     </div>
   </header>
@@ -543,7 +543,7 @@ footer{color:var(--muted);font-size:.85rem}
 
   /* ---------- tchan ---------- */
   var somOn=true; try{somOn=localStorage.getItem(LS+'-som')!=='0';}catch(e){}
-  function setSom(){var b=$('somBtn');b.textContent='Som: '+(somOn?'ligado':'desligado');b.setAttribute('aria-pressed',String(somOn));}
+  function setSom(){var b=$('somBtn');b.textContent='Efeitos: '+(somOn?'ligados':'desligados');b.setAttribute('aria-pressed',String(somOn));}
   var actx=null;
   function tchanSound(){
     if(!somOn) return;
@@ -717,7 +717,7 @@ footer{color:var(--muted);font-size:.85rem}
   });
 
   /* ---------- música no telão (player oficial do YouTube; o navegador exige um toque para tocar) ---------- */
-  var SPOTIFY='spotify:track:3OsGQkrKpTMMJNJLHwwBoE', musicaOn=false, spCtl=null, spLoading=false, jaTocou=false;
+  var SPOTIFY='spotify:track:3OsGQkrKpTMMJNJLHwwBoE', musicaOn=false, spCtl=null, spLoading=false, jaTocou=false, tocando=false;
   function iniciarSpotify(){
     if(spCtl||spLoading) return;
     spLoading=true;
@@ -727,7 +727,7 @@ footer{color:var(--muted);font-size:.85rem}
         c.addListener('ready',function(){ if(musicaOn){try{c.play();}catch(e){}} });
         c.addListener('playback_update',function(e){
           var d=(e&&e.data)||{};
-          if(!d.isPaused&&d.position>0) jaTocou=true;
+          tocando=!d.isPaused; if(tocando) jaTocou=true; rotuloMusica();
           if(d.isPaused&&d.position===0&&jaTocou&&musicaOn){try{c.play();}catch(x){}}   // terminou: toca de novo
         });
       });
@@ -736,19 +736,27 @@ footer{color:var(--muted);font-size:.85rem}
     s.onerror=function(){spLoading=false;};
     document.head.appendChild(s);
   }
+  function rotuloMusica(){
+    var b=$('musicaBtn');
+    b.textContent=tocando?'♪ Música: tocando':'♪ Tocar música';
+    b.setAttribute('aria-pressed',String(tocando));
+  }
   function setMusica(on){
     musicaOn=on;
-    $('musicaBox').hidden=!on;
+    $('musicaBox').hidden=false;
     if(on){ if(spCtl){try{spCtl.play();}catch(e){}} else { iniciarSpotify(); } }
     else if(spCtl){try{spCtl.pause();}catch(e){}}
     var b=$('musicaBtn');
-    b.textContent=on?'♪ Parar Jai Ho':'♪ Tocar Jai Ho';
+    rotuloMusica();
     b.setAttribute('aria-pressed',String(on));
   }
   var musicaParadaPeloUsuario=false;
   if(!ADM){
     $('musicaBtn').hidden=false;
-    $('musicaBtn').addEventListener('click',function(){musicaParadaPeloUsuario=musicaOn;setMusica(!musicaOn);});
+    $('musicaBtn').addEventListener('click',function(){
+      if(tocando){ musicaParadaPeloUsuario=true; musicaOn=false; if(spCtl){try{spCtl.pause();}catch(x){}} tocando=false; rotuloMusica(); }
+      else { musicaParadaPeloUsuario=false; setMusica(true); }
+    });
     // tenta tocar assim que abre; se o navegador bloquear o som, começa no primeiro toque ou tecla
     setMusica(true);
     var primeiroToque=function(e){
