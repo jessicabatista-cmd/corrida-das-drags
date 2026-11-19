@@ -191,7 +191,7 @@ body.adm .card[aria-labelledby="h-corr"],body.adm .card[aria-labelledby="h-class
 body.adm[data-tab="pagar"] .card[aria-labelledby="h-bonus"],body.adm[data-tab="pagar"] #admin{display:none}
 body.adm[data-tab="reforcos"] #proxima,body.adm[data-tab="reforcos"] .card[aria-labelledby="h-rod"],body.adm[data-tab="reforcos"] #admin{display:none}
 body.adm[data-tab="cfg"] #proxima,body.adm[data-tab="cfg"] .card[aria-labelledby="h-rod"],body.adm[data-tab="cfg"] .card[aria-labelledby="h-bonus"]{display:none}
-body.adm-out .board,body.adm-out .card,body.adm-out #proxima{display:none}
+body.adm-out .card,body.adm-out #proxima{display:none}
 
 /* toast e confete */
 #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);opacity:0;pointer-events:none;
@@ -298,6 +298,7 @@ footer{color:var(--muted);font-size:.85rem}
 
   <details class="owner" id="owner" open hidden>
     <summary>Tela de quitar</summary>
+    <p class="muted" style="margin:10px 0 0">Digite o PIN para liberar os botões de quitar. Para só acompanhar, use o <a href="./">telão</a>.</p>
     <form id="pinForm" class="admin" autocomplete="off">
       <label for="o-pin">PIN<input id="o-pin" type="password" autocomplete="off" required></label>
       <div class="err" id="ownerErr" role="alert" style="padding:0"></div>
@@ -664,7 +665,7 @@ footer{color:var(--muted);font-size:.85rem}
   }
   $('pinForm').addEventListener('submit',function(e){
     e.preventDefault(); $('ownerErr').textContent='';
-    var p=$('o-pin').value.trim();
+    var p=$('o-pin').value.trim().toLowerCase();
     rpc('drags_pin_ok',{p_pin:p}).then(function(ok){
       if(ok===true){
         PIN=p; try{localStorage.setItem(LS+'-pin',p);}catch(x){}
