@@ -178,8 +178,8 @@ input{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:2
 /* site publicado */
 [hidden]{display:none!important}
 .viewer [data-act="pagar"],.viewer [data-act="desfazer"],.viewer [data-act="rm"],.viewer #formBonus{display:none}
-#musicaBox{position:fixed;left:-400px;top:0;width:200px;height:200px;opacity:0;pointer-events:none;overflow:hidden}
-#musicaBox iframe{width:200px;height:200px;border:0}
+#musicaBox{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:15;max-width:420px;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+#musicaBox iframe{display:block;width:100%;border:0}
 .top>div[style]{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;text-align:right!important}
 .top>div[style] #sync{flex-basis:100%;order:3;text-align:right}
 .top>div[style] .tag{order:0}
@@ -340,7 +340,7 @@ footer{color:var(--muted);font-size:.85rem}
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
-<div id="musicaBox" aria-hidden="true"><iframe id="musicaFrame" tabindex="-1" title="Jai Ho, Pussycat Dolls (áudio)" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+<div id="musicaBox" hidden><div id="spotifyEmbed"></div></div>
 <div id="tchan" role="status" aria-live="assertive"><div class="rays"></div><div class="emo" id="tchanEmo">💅</div><div class="word">Arrasou, diva!<br>Menos uma!</div><div class="sub" id="tchanSub"></div><div class="sub2" id="tchanSub2"></div></div><canvas id="confetti" aria-hidden="true"></canvas>
 
 <script src="config.js"></script>
@@ -713,18 +713,32 @@ footer{color:var(--muted);font-size:.85rem}
   });
 
   /* ---------- música no telão (player oficial do YouTube; o navegador exige um toque para tocar) ---------- */
-  var MUSICA='Yc5OyXmHD0w', musicaOn=false, musicaCarregada=false;
-  function musicaCmd(fn){
-    try{$('musicaFrame').contentWindow.postMessage(JSON.stringify({event:'command',func:fn,args:[]}),'*');}catch(e){}
+  var SPOTIFY='spotify:track:3OsGQkrKpTMMJNJLHwwBoE', musicaOn=false, spCtl=null, spLoading=false, jaTocou=false;
+  function iniciarSpotify(){
+    if(spCtl||spLoading) return;
+    spLoading=true;
+    window.onSpotifyIframeApiReady=function(API){
+      API.createController($('spotifyEmbed'),{uri:SPOTIFY,width:'100%',height:80},function(c){
+        spCtl=c; spLoading=false;
+        c.addListener('ready',function(){ if(musicaOn){try{c.play();}catch(e){}} });
+        c.addListener('playback_update',function(e){
+          var d=(e&&e.data)||{};
+          if(!d.isPaused&&d.position>0) jaTocou=true;
+          if(d.isPaused&&d.position===0&&jaTocou&&musicaOn){try{c.play();}catch(x){}}   // terminou: toca de novo
+        });
+      });
+    };
+    var s=document.createElement('script'); s.src='https://open.spotify.com/embed/iframe-api/v1'; s.async=true;
+    s.onerror=function(){spLoading=false;};
+    document.head.appendChild(s);
   }
   function setMusica(on){
     musicaOn=on;
-    var fr=$('musicaFrame'), b=$('musicaBtn');
-    if(on&&!musicaCarregada){
-      musicaCarregada=true;
-      fr.src='https://www.youtube-nocookie.com/embed/'+MUSICA+'?autoplay=1&loop=1&playlist='+MUSICA+'&rel=0&playsinline=1&controls=0&enablejsapi=1';
-    } else { musicaCmd(on?'playVideo':'pauseVideo'); }
-    b.textContent=on?'♪ Pausar Jai Ho':'♪ Tocar Jai Ho';
+    $('musicaBox').hidden=!on;
+    if(on){ if(spCtl){try{spCtl.play();}catch(e){}} else { iniciarSpotify(); } }
+    else if(spCtl){try{spCtl.pause();}catch(e){}}
+    var b=$('musicaBtn');
+    b.textContent=on?'♪ Parar Jai Ho':'♪ Tocar Jai Ho';
     b.setAttribute('aria-pressed',String(on));
   }
   if(!ADM){
