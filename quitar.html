@@ -745,9 +745,18 @@ footer{color:var(--muted);font-size:.85rem}
     b.textContent=on?'♪ Parar Jai Ho':'♪ Tocar Jai Ho';
     b.setAttribute('aria-pressed',String(on));
   }
+  var musicaParadaPeloUsuario=false;
   if(!ADM){
     $('musicaBtn').hidden=false;
-    $('musicaBtn').addEventListener('click',function(){setMusica(!musicaOn);});
+    $('musicaBtn').addEventListener('click',function(){musicaParadaPeloUsuario=musicaOn;setMusica(!musicaOn);});
+    // tenta tocar assim que abre; se o navegador bloquear o som, começa no primeiro toque ou tecla
+    setMusica(true);
+    var primeiroToque=function(e){
+      ['pointerdown','keydown','touchstart'].forEach(function(ev){document.removeEventListener(ev,primeiroToque,true);});
+      if(musicaParadaPeloUsuario||(e.target&&e.target.closest&&e.target.closest('#musicaBtn'))) return;
+      if(!musicaOn){setMusica(true);} else if(spCtl){try{spCtl.play();}catch(x){}}
+    };
+    ['pointerdown','keydown','touchstart'].forEach(function(ev){document.addEventListener(ev,primeiroToque,true);});
   }
 
   /* ---------- início ---------- */
